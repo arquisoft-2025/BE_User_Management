@@ -25,6 +25,46 @@ python app.py
 
 Esto hara que la API se ejecuta en la URL http://127.0.0.1:5002 y su documentacion en Swagger se encontrara en http://127.0.0.1:5002/apidocs
 
+## Configuración de la Base de Datos (MySQL)
+
+### 1. Instalar MySQL (si aún no lo tienes)
+- Descargar desde: https://dev.mysql.com/downloads/installer/
+- Durante la instalación, anota la contraseña del usuario `root`.
+
+### 2. Agregar MySQL al PATH (opcional pero recomendado)
+En Windows, agrega la carpeta `bin` de la instalación, por ejemplo:
+```
+C:\Program Files\MySQL\MySQL Server 8.0\bin
+```
+
+### 3. Crear la base de datos
+Puedes usar el cliente de línea de comandos de MySQL:
+```powershell
+"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p
+```
+Dentro del prompt de MySQL:
+```sql
+CREATE DATABASE user_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE user_management;
+```
+No necesitas crear manualmente la tabla `users`; SQLAlchemy la generará con `db.create_all()` al iniciar la aplicación.
+
+### 4. Cadena de conexión
+Actualmente la cadena está configurada en `app.py` como:
+```
+mysql+mysqlconnector://root:root@localhost/user_management
+```
+Si tu contraseña de root no es `root`, cámbiala en esa línea. Ejemplo:
+```python
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:MI_PASSWORD@localhost/user_management'
+```
+
+### 5. Dependencias del conector
+`requirements.txt` incluye `mysql-connector-python`. Si hay error de importación, instala manualmente:
+```bash
+pip install mysql-connector-python
+```
+
 ## Endpoints disponibles
 
 ### POST /register
