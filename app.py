@@ -15,7 +15,7 @@ from functools import wraps
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
-app.config["MONGO_URI"] = "mongodb://localhost:27017/user_management"
+app.config["MONGO_URI"] = os.getenv("MONGO_URI", "mongodb://localhost:27017/user_management")
 mongo = PyMongo(app)
 swagger = Swagger(app) 
 
@@ -240,4 +240,4 @@ def metrics():
 
 # ...existing code...
 if __name__ == "__main__":
-    app.run(debug=True, port=5002)
+    app.run(host='0.0.0.0', debug=True, port=5002)

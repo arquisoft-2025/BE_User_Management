@@ -1,0 +1,11 @@
+podman build -t user-management-api . 
+podman run --network host --name user-manage user-management-api
+
+docker build -t donation-api .
+podman run -p 5000:5000 donation-api
+
+podman build -t shopping-cart-api . 
+podman run --network host --name shopping-car  shopping-cart-api 
+
+podman build -t notification-api . 
+podman run --network host --name notification-api  notification-api 
