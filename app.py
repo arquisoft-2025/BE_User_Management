@@ -15,10 +15,12 @@ from functools import wraps
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:root@localhost/user_management'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 swagger = Swagger(app)
 db = SQLAlchemy(app)
+
 
 # MÉTRICAS
 REQUEST_COUNT = Counter('user_management_http_requests_total', 'Total Requests', ['method', 'endpoint'])
@@ -233,4 +235,5 @@ def add_log_and_headers(response):
     return response
 
 if __name__ == "__main__":
-  app.run(debug=True, port=5002)
+    app.run(host='0.0.0.0', debug=True, port=5002)
+
