@@ -1,11 +1,27 @@
+# User Management API con MySQL
+# Opción 1: Usar docker-compose (RECOMENDADO)
+docker-compose down -v
+docker-compose up --build -d
+docker-compose logs -f user_management_api
+
+# Opción 2: Solo contenedor con MySQL externo
 podman build -t user-management-api . 
 podman run --network host --name user-manage user-management-api
 
+# Opción 3: Ver logs
+docker-compose logs -f
+
+# Detener servicios
+docker-compose down
+
+# Donation API
 docker build -t donation-api .
 podman run -p 5000:5000 donation-api
 
+# Shopping Cart API
 podman build -t shopping-cart-api . 
-podman run --network host --name shopping-car  shopping-cart-api 
+podman run --network host --name shopping-car shopping-cart-api 
 
+# Notification API
 podman build -t notification-api . 
-podman run --network host --name notification-api  notification-api 
+podman run --network host --name notification-api notification-api 

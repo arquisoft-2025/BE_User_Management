@@ -13,10 +13,20 @@ from prometheus_client import Counter, Histogram, generate_latest
 import time
 from functools import wraps
 
+# Cargar variables de entorno
+load_dotenv()
+
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:root@localhost/user_management'
+# Configuración de base de datos con variables de entorno
+mysql_host = os.getenv('MYSQL_HOST', 'localhost')
+mysql_port = os.getenv('MYSQL_PORT', '3306')
+mysql_database = os.getenv('MYSQL_DATABASE', 'user_management')
+mysql_user = os.getenv('MYSQL_USER', 'root')
+mysql_password = os.getenv('MYSQL_PASSWORD', 'root')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{mysql_user}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_database}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 swagger = Swagger(app)
 db = SQLAlchemy(app)
