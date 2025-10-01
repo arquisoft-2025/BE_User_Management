@@ -1,3 +1,5 @@
+python_version >=3.11, <3.12
+flask-cors
 attrs==25.3.0
 bcrypt==4.3.0
 blinker==1.9.0
