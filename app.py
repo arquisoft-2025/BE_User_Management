@@ -7,6 +7,7 @@ from flask_jwt_extended import create_access_token, JWTManager
 from password_generator import PasswordGenerator
 from flask_mail import Mail, Message
 import os
+import requests
 from flask_cors import CORS
 from dotenv import load_dotenv
 from prometheus_client import Counter, Histogram, generate_latest
@@ -79,6 +80,29 @@ app.config.update(
     MAIL_USE_SSL = False,
 )
 mail = Mail(app)
+
+
+def send_mailjet_email(sender_email, recipient_email, subject, text):
+    """Send an email using Mailjet API v3.1"""
+    mj_public = os.getenv('MAILJET_API_KEY_PUBLIC')
+    mj_private = os.getenv('MAILJET_API_KEY_PRIVATE')
+    if not mj_public or not mj_private:
+        raise RuntimeError("Mailjet API keys not configured in environment")
+
+    url = "https://api.mailjet.com/v3.1/send"
+    payload = {
+      "Messages": [
+        {
+          "From": {"Email": sender_email},
+          "To": [{"Email": recipient_email}],
+          "Subject": subject,
+          "TextPart": text
+        }
+      ]
+    }
+    resp = requests.post(url, json=payload, auth=(mj_public, mj_private), timeout=10)
+    resp.raise_for_status()
+    return resp.json()
 
 @app.route('/register', methods=['POST'])
 @monitor_metrics
@@ -198,23 +222,35 @@ def recover():
       404:
         description: El usuario no existe
     """
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if not data or not data.get("email"):
+        return jsonify({"error": "Campo 'email' requerido"}), 400
+
     user = User.query.filter_by(email=data.get("email")).first()
     if user is None:
         return jsonify({"mensaje": "El usuario no existe"}), 404
+
+    # Generar nueva contraseña temporal
     new_pwd = PasswordGenerator().generate()
-    user.password = bcrypt.hashpw(new_pwd.encode("utf-8"), bcrypt.gensalt())
-    db.session.commit()
-    msg = Message(
-        subject="Recuperación de contraseña",
-        sender=os.getenv('MAIL_USERNAME'),
-        recipients=[data["email"]],
-        body=f"Hola, tu nueva contraseña es: {new_pwd}"
-    )
+    sender = os.getenv('MAIL_SENDER') or os.getenv('MAIL_USERNAME')
+    subject = "Recuperación de contraseña"
+    body = f"Hola, tu nueva contraseña es: {new_pwd}"
+
+    # Intentar enviar vía Mailjet API
     try:
-        mail.send(msg)
-    except:
-        return jsonify({"error": "No se pudo enviar la nueva contraseña"}), 400
+        send_mailjet_email(sender, data.get("email"), subject, body)
+    except Exception as e:
+        app.logger.exception("Mailjet send failed for %s", data.get("email"))
+        return jsonify({"error": "No se pudo enviar la nueva contraseña", "detail": str(e)}), 400
+
+    # Si el envío fue exitoso, actualizar la contraseña en la base de datos
+    try:
+        user.password = bcrypt.hashpw(new_pwd.encode("utf-8"), bcrypt.gensalt())
+        db.session.commit()
+    except Exception as db_e:
+        app.logger.exception("DB commit failed when saving new password for %s", data.get("email"))
+        return jsonify({"error": "Error al actualizar la contraseña"}), 500
+
     return jsonify({"mensaje": "La nueva contraseña fue entregada"}), 200
 
 @app.route("/metrics", methods=["GET"])
