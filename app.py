@@ -18,7 +18,8 @@ from functools import wraps
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+# Allow local dev origins (Vite and Next dev servers)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:3000"]) 
 
 # Configuración de base de datos con variables de entorno
 mysql_host = os.getenv('MYSQL_HOST', 'localhost')
