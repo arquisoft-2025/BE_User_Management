@@ -69,7 +69,7 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
-app.config["JWT_SECRET_KEY"] = "lkhjap8gy2p 03kt"
+app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY', 'lkhjap8gy2p_03kt')
 jwt = JWTManager(app)
 load_dotenv()
 app.config.update(
