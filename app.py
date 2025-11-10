@@ -189,7 +189,7 @@ def login():
     user = User.query.filter_by(email=data.get("email")).first()
     if user is None:
         return jsonify({"mensaje": "El usuario no existe"}), 404
-    if bcrypt.checkpw(data["password"].encode('utf-8'), user.password):
+    if bcrypt.checkpw(data["password"].encode('utf-8'), bytes(user.password)):
         return jsonify({
             "name": user.name,
             "email": user.email,
