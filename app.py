@@ -189,15 +189,11 @@ def login():
     user = User.query.filter_by(email=data.get("email")).first()
     if user is None:
         return jsonify({"mensaje": "El usuario no existe"}), 404
-<<<<<<< HEAD
     
     # Convert bytearray to bytes if necessary (MySQL returns BINARY fields as bytearray)
     stored_password = bytes(user.password) if isinstance(user.password, bytearray) else user.password
     
     if bcrypt.checkpw(data["password"].encode('utf-8'), stored_password):
-=======
-    if bcrypt.checkpw(data["password"].encode('utf-8'), bytes(user.password)):
->>>>>>> 38e3681f15db5918dce2221f3a6895c78e74a706
         return jsonify({
             "name": user.name,
             "email": user.email,
